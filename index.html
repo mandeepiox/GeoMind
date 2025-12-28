@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punjab Soil Analyzer - Professional Soil Testing Platform</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 6px 10px rgba(0,0,0,0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-outline {
+            padding: 0.5rem 1.25rem;
+            border: 1.5px solid var(--border);
+            background: white;
+            color: var(--dark);
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #eff6ff;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Card System */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label-required::after {
+            content: '*';
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 1rem;
+            top: 2.5rem;
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #eff6ff;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Map Section */
+        .map-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: white;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .map-toggle-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #eff6ff;
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-top: 1rem;
+            display: none;
+        }
+
+        #map.active {
+            display: block;
+        }
+
+        .map-info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .map-info-box.active {
+            display: block;
+        }
+
+        .map-info-box p {
+            font-size: 0.875rem;
+            color: #1e40af;
+            margin: 0.25rem 0;
+        }
+
+        .coordinate-badge {
+            display: inline-block;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+            border-left: 4px solid;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border-color: var(--secondary);
+            color: #065f46;
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .location-badge {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: #1e40af;
+            font-weight: 500;
+        }
+
+        /* Soil Type Classification */
+        .soil-classification {
+            background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        .soil-type-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .soil-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-lg);
+            animation: scaleIn 0.5s;
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .soil-type-sandy {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 2px solid #fbbf24;
+        }
+
+        .soil-type-clay {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #7f1d1d;
+            border: 2px solid #f87171;
+        }
+
+        .soil-type-loam {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border: 2px solid #34d399;
+        }
+
+        .soil-type-silt {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e3a8a;
+            border: 2px solid #60a5fa;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .chart-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-container-wrapper {
+            position: relative;
+            height: 280px;
+        }
+
+        /* Characteristics Panel */
+        .characteristics-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        .characteristics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .characteristic-item {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .characteristic-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .characteristic-text {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .best-uses {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+        }
+
+        .best-uses-title {
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .best-uses-text {
+            color: #047857;
+            font-size: 0.9rem;
+        }
+
+        /* Properties Grid */
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .property-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .property-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .property-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .property-card:hover::before {
+            opacity: 1;
+        }
+
+        .property-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .property-icon {
+            font-size: 1.75rem;
+        }
+
+        .property-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .property-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .property-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .property-r2 {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .confidence-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .confidence-high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .confidence-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .confidence-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Section Divider */
+        .section-divider {
+            margin: 3rem 0;
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .logo-text h1 {
+                font-size: 1rem;
+            }
+
+            .logo-text p {
+                display: none;
+            }
+
+            .btn-outline {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .properties-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #map {
+                height: 400px;
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Leaflet Popup Customization */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .popup-content {
+            padding: 0.5rem;
+        }
+
+        .popup-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .popup-coords {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+
+        .popup-btn {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🌾</div>
+                <div class="logo-text">
+                    <h1>Punjab Soil Analyzer</h1>
+                    <p>Professional Soil Testing Platform</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-outline" onclick="window.location.href='admin.html'">
+                    📊 Dashboard
+                </button>
+                <button class="btn-outline" onclick="window.open('http://localhost:8000/docs')">
+                    📖 API Docs
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Map Section -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">🗺️</span>
+                    Location Selection
+                </div>
+                <button class="map-toggle-btn" onclick="toggleMap()">
+                    <span id="mapToggleIcon">▶</span>
+                    <span id="mapToggleText">Show Interactive Map</span>
+                </button>
+            </div>
+
+            <div id="map"></div>
+
+            <div class="map-info-box" id="mapInfoBox">
+                <p><strong>💡 How to use the map:</strong></p>
+                <p>• Click anywhere within Punjab region to select coordinates</p>
+                <p>• Your selection will automatically update the form below</p>
+                <p>• The highlighted area shows the valid prediction region</p>
+                <div id="selectedCoords"></div>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">📍</span>
+                    Prediction Parameters
+                </div>
+            </div>
+
+            <form onsubmit="event.preventDefault(); predict();">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label form-label-required" for="latitude">Latitude</label>
+                        <input type="number" id="latitude" class="form-input" 
+                               step="0.000001" placeholder="e.g., 31.227389" 
+                               value="31.227389" required>
+                        <span class="input-icon">°N</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label form-label-required" for="longitude">Longitude</label>
+                        <input type="number" id="longitude" class="form-input" 
+                               step="0.000001" placeholder="e.g., 75.766764" 
+                               value="75.766764" required>
+                        <span class="input-icon">°E</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label form-label-required" for="depth">Depth (meters)</label>
+                        <input type="number" id="depth" class="form-input" 
+                               step="0.1" min="0.5" max="30" placeholder="e.g., 3.0" 
+                               value="3.0" required>
+                        <span class="input-icon">m</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" style="margin-top: 1.5rem;">
+                    <span>🔍</span>
+                    Analyze Soil Properties
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p class="loading-text">Analyzing soil composition...</p>
+            </div>
+
+            <div class="alert alert-error" id="errorAlert"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results">
+            <div class="card">
+                <div class="results-header">
+                    <h2 class="results-title">Analysis Results</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <div class="location-badge" id="locationInfo"></div>
+                        <button class="btn btn-secondary" onclick="downloadPDF()" id="downloadPDFBtn">
+                            <span>📄</span>
+                            Download PDF Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Soil Classification -->
+                <div class="soil-classification" id="soilClassification" style="display: none;">
+                    <div class="soil-type-header">
+                        <div id="soilTypeBadge"></div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-card-title">
+                                <span>📊</span>
+                                Particle Distribution
+                            </div>
+                            <div class="chart-container-wrapper">
+                                <canvas id="soilPieChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-card-title">
+                                <span>📈</span>
+                                Composition Breakdown
+                            </div>
+                            <div class="chart-container-wrapper">
+                                <canvas id="soilBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="characteristics-panel" id="characteristicsPanel">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;">Soil Characteristics</h3>
+                        <div class="characteristics-grid" id="characteristicsGrid"></div>
+                        <div class="best-uses" id="bestUses"></div>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- Detailed Properties -->
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--dark);">
+                    Detailed Property Analysis
+                </h3>
+                <div class="properties-grid" id="propertiesGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+
+        let map, marker, isMapVisible = false;
+        let soilPieChart = null, soilBarChart = null;
+        let lastPredictionData = null; // Store last prediction for PDF generation
+
+        function initMap() {
+            if (map) return;
+
+            const punjabCenter = [31.1471, 75.3412];
+            map = L.map('map').setView(punjabCenter, 8);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            const punjabBounds = [[30.0, 74.0], [32.0, 77.0]];
+            L.rectangle(punjabBounds, {
+                color: '#2563eb',
+                weight: 2,
+                fillOpacity: 0.05,
+                dashArray: '5, 5'
+            }).addTo(map);
+
+            map.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+
+                if (lat >= 30.0 && lat <= 32.0 && lng >= 74.0 && lng <= 77.0) {
+                    setMarker(lat, lng);
+                    updateCoordinates(lat, lng);
+                } else {
+                    showError('Please select a location within Punjab region (30-32°N, 74-77°E)');
+                }
+            });
+
+            setMarker(31.227389, 75.766764);
+        }
+
+        function setMarker(lat, lng) {
+            if (marker) map.removeLayer(marker);
+
+            marker = L.marker([lat, lng]).addTo(map);
+
+            const popupContent = `
+                <div class="popup-content">
+                    <div class="popup-title">📍 Selected Location</div>
+                    <div class="popup-coords">
+                        Lat: ${lat.toFixed(6)}<br>
+                        Lon: ${lng.toFixed(6)}
+                    </div>
+                    <button class="popup-btn" onclick="predict()">
+                        Analyze This Location
+                    </button>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent).openPopup();
+            map.setView([lat, lng], map.getZoom());
+        }
+
+        function updateCoordinates(lat, lng) {
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+            
+            const coordsDiv = document.getElementById('selectedCoords');
+            coordsDiv.innerHTML = `<div class="coordinate-badge">Selected: ${lat.toFixed(6)}°N, ${lng.toFixed(6)}°E</div>`;
+        }
+
+        function toggleMap() {
+            isMapVisible = !isMapVisible;
+            const mapElement = document.getElementById('map');
+            const mapInfoBox = document.getElementById('mapInfoBox');
+            const toggleIcon = document.getElementById('mapToggleIcon');
+            const toggleText = document.getElementById('mapToggleText');
+
+            if (isMapVisible) {
+                mapElement.classList.add('active');
+                mapInfoBox.classList.add('active');
+                toggleIcon.textContent = '▼';
+                toggleText.textContent = 'Hide Interactive Map';
+                initMap();
+                setTimeout(() => map.invalidateSize(), 100);
+            } else {
+                mapElement.classList.remove('active');
+                mapInfoBox.classList.remove('active');
+                toggleIcon.textContent = '▶';
+                toggleText.textContent = 'Show Interactive Map';
+            }
+        }
+
+        async function predict() {
+            const latitude = parseFloat(document.getElementById('latitude').value);
+            const longitude = parseFloat(document.getElementById('longitude').value);
+            const depth = parseFloat(document.getElementById('depth').value);
+
+            if (isNaN(latitude) || isNaN(longitude) || isNaN(depth)) {
+                showError('Please enter valid numbers for all fields');
+                return;
+            }
+
+            if (latitude < 30.0 || latitude > 32.0) {
+                showError('Latitude must be between 30.0 and 32.0');
+                return;
+            }
+
+            if (longitude < 74.0 || longitude > 77.0) {
+                showError('Longitude must be between 74.0 and 77.0');
+                return;
+            }
+
+            if (depth < 0.5 || depth > 30.0) {
+                showError('Depth must be between 0.5m and 30m');
+                return;
+            }
+
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('errorAlert').classList.remove('active');
+            document.getElementById('results').classList.remove('active');
+
+            try {
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ latitude, longitude, depth })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Prediction failed');
+                }
+
+                displayResults(data);
+                
+                // Store prediction data for PDF generation
+                lastPredictionData = {
+                    latitude: latitude,
+                    longitude: longitude,
+                    depth: depth
+                };
+
+                setTimeout(() => {
+                    document.getElementById('results').scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+
+            } catch (error) {
+                showError(error.message || 'Failed to connect to server');
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('locationInfo').textContent = 
+                `${data.input.latitude.toFixed(6)}°N, ${data.input.longitude.toFixed(6)}°E at ${data.input.depth}m depth`;
+
+            const gravel = data.predictions['Gravel']?.value || 0;
+            const sand = data.predictions['Sand']?.value || 0;
+            const siltClay = data.predictions['Silt & Clay']?.value || 0;
+
+            if (gravel > 0 || sand > 0 || siltClay > 0) {
+                createSoilCharts(gravel, sand, siltClay);
+                determineSoilType(gravel, sand, siltClay);
+                document.getElementById('soilClassification').style.display = 'block';
+            }
+
+            const propertiesGrid = document.getElementById('propertiesGrid');
+            propertiesGrid.innerHTML = '';
+
+            const propertyIcons = {
+                'N-value': '🔨',
+                'Bulk Density': '⚖️',
+                'Cohesion': '🔗',
+                'Shear angle': '📐',
+                'Gravel': '🪨',
+                'Sand': '🏖️',
+                'Silt & Clay': '🧱'
+            };
+
+            for (const [property, result] of Object.entries(data.predictions)) {
+                if (result.value !== null) {
+                    const card = document.createElement('div');
+                    card.className = 'property-card';
+                    
+                    const icon = propertyIcons[property] || '📊';
+                    const confidenceClass = `confidence-${result.confidence.toLowerCase()}`;
+                    
+                    card.innerHTML = `
+                        <div class="property-header">
+                            <span class="property-icon">${icon}</span>
+                            <span class="property-name">${property}</span>
+                        </div>
+                        <div class="property-value">${result.value.toFixed(2)}</div>
+                        <div class="property-meta">
+                            <span class="property-r2">R² Score: ${result.r2_score.toFixed(3)}</span>
+                            <span class="confidence-badge ${confidenceClass}">
+                                ${result.confidence}
+                            </span>
+                        </div>
+                    `;
+                    
+                    propertiesGrid.appendChild(card);
+                }
+            }
+
+            document.getElementById('results').classList.add('active');
+        }
+
+        async function downloadPDF() {
+            if (!lastPredictionData) {
+                showError('Please make a prediction first before downloading the report');
+                return;
+            }
+
+            const downloadBtn = document.getElementById('downloadPDFBtn');
+            const originalText = downloadBtn.innerHTML;
+            
+            try {
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<span>⏳</span> Generating PDF...';
+
+                const response = await fetch(`${API_URL}/generate-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lastPredictionData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'PDF generation failed');
+                }
+
+                // Get the PDF blob
+                const blob = await response.blob();
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Generate filename
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                a.download = `soil_report_${lastPredictionData.latitude}_${lastPredictionData.longitude}_${timestamp}.pdf`;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // Show success message
+                const successAlert = document.createElement('div');
+                successAlert.className = 'alert alert-success active';
+                successAlert.textContent = '✓ PDF report downloaded successfully!';
+                document.querySelector('.results-section .card').insertBefore(
+                    successAlert,
+                    document.querySelector('.results-header')
+                );
+                
+                setTimeout(() => successAlert.remove(), 3000);
+
+            } catch (error) {
+                showError(error.message || 'Failed to generate PDF report');
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = originalText;
+            }
+        }
+
+        function createSoilCharts(gravel, sand, siltClay) {
+            if (soilPieChart) soilPieChart.destroy();
+            if (soilBarChart) soilBarChart.destroy();
+
+            const colors = {
+                gravel: '#8b4513',
+                sand: '#f4c430',
+                siltClay: '#d2691e'
+            };
+
+            const chartData = {
+                labels: ['Gravel', 'Sand', 'Silt & Clay'],
+                datasets: [{
+                    data: [gravel, sand, siltClay],
+                    backgroundColor: [colors.gravel, colors.sand, colors.siltClay],
+                    borderColor: '#fff',
+                    borderWidth: 3
+                }]
+            };
+
+            const pieCtx = document.getElementById('soilPieChart').getContext('2d');
+            soilPieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 15, font: { size: 12, weight: 'bold' } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const barCtx = document.getElementById('soilBarChart').getContext('2d');
+            soilBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Percentage (%)', font: { size: 14, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        function determineSoilType(gravel, sand, siltClay) {
+            let soilType = '', soilClass = '', characteristics = [];
+
+            const total = gravel + sand + siltClay;
+            const normalizedSand = (sand / total) * 100;
+            const normalizedSilt = (siltClay / total) * 100;
+
+            if (normalizedSand > 85) {
+                soilType = 'Sandy Soil';
+                soilClass = 'soil-type-sandy';
+                characteristics = [
+                    { icon: '💧', text: 'High drainage capacity' },
+                    { icon: '⚠️', text: 'Low water retention' },
+                    { icon: '✓', text: 'Easy to work with' },
+                    { icon: '📉', text: 'Low nutrient retention' }
+                ];
+            } else if (normalizedSilt > 80) {
+                soilType = 'Silty Soil';
+                soilClass = 'soil-type-silt';
+                characteristics = [
+                    { icon: '💧', text: 'Moderate drainage' },
+                    { icon: '✓', text: 'Good water retention' },
+                    { icon: '⚠️', text: 'Prone to compaction' },
+                    { icon: '🌱', text: 'High fertility potential' }
+                ];
+            } else if (normalizedSilt < 40 && normalizedSand > 40) {
+                soilType = 'Clay Soil';
+                soilClass = 'soil-type-clay';
+                characteristics = [
+                    { icon: '⚠️', text: 'Poor drainage' },
+                    { icon: '💧', text: 'High water retention' },
+                    { icon: '⚠️', text: 'Difficult to work when wet' },
+                    { icon: '✓', text: 'High nutrient retention' }
+                ];
+            } else {
+                soilType = 'Loam Soil';
+                soilClass = 'soil-type-loam';
+                characteristics = [
+                    { icon: '✓', text: 'Balanced drainage' },
+                    { icon: '💧', text: 'Good water retention' },
+                    { icon: '✓', text: 'Excellent workability' },
+                    { icon: '🌱', text: 'Ideal for most crops' }
+                ];
+            }
+
+            const badge = document.getElementById('soilTypeBadge');
+            badge.innerHTML = `<div class="soil-type-badge ${soilClass}">${soilType}</div>`;
+
+            const grid = document.getElementById('characteristicsGrid');
+            grid.innerHTML = characteristics.map(char => `
+                <div class="characteristic-item">
+                    <span class="characteristic-icon">${char.icon}</span>
+                    <span class="characteristic-text">${char.text}</span>
+                </div>
+            `).join('');
+
+            const uses = {
+                'Sandy Soil': 'Root vegetables, drought-resistant crops, requires frequent irrigation',
+                'Silty Soil': 'Most vegetables, fruits, good all-purpose soil with proper management',
+                'Clay Soil': 'Rice cultivation, trees, requires good drainage management',
+                'Loam Soil': 'All crops, vegetables, fruits - ideal agricultural soil'
+            };
+
+            document.getElementById('bestUses').innerHTML = `
+                <div class="best-uses-title">🌾 Best Agricultural Uses</div>
+                <div class="best-uses-text">${uses[soilType]}</div>
+            `;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorAlert');
+            errorDiv.textContent = '⚠️ ' + message;
+            errorDiv.classList.add('active');
+            setTimeout(() => errorDiv.classList.remove('active'), 5000);
+        }
+
+        // Update coordinates when typing
+        ['latitude', 'longitude'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                const lat = parseFloat(document.getElementById('latitude').value);
+                const lng = parseFloat(document.getElementById('longitude').value);
+                if (!isNaN(lat) && !isNaN(lng) && isMapVisible && 
+                    lat >= 30 && lat <= 32 && lng >= 74 && lng <= 77) {
+                    setMarker(lat, lng);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
